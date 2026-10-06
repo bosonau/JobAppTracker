@@ -16,5 +16,18 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+  api:
+    build: .
+    container_name: jobtracker-api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=jobtracker;Username=jobtracker;Password=devpassword"
+      ASPNETCORE_ENVIRONMENT: Development
+      Jwt__Key: ${JWT_KEY}
+    ports:
+      - "8080:8080"
+    
 volumes:
   pgdata:    

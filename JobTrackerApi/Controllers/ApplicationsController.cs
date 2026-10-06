@@ -7,11 +7,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using JobTrackerApi.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace JobTrackerApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
+    [Route("api/[controller]")]
     public class ApplicationsController : ControllerBase
     {
         private readonly ApplicationContext _context;

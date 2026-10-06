@@ -1,6 +1,9 @@
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using JobTrackerApi.Models;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +18,24 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 builder.Services.AddDbContext<ApplicationContext>(opt =>
     opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
+var jwt = builder.Configuration.GetSection("Jwt");
+var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["Key"]!));
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options=>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwt["Issuer"],
+            ValidateAudience = true,
+            ValidAudience = jwt["Audience"],
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = signingKey
+        };
+    });
+builder.Services.AddAuthorization();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -29,7 +49,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
