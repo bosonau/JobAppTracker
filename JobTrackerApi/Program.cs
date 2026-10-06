@@ -41,6 +41,12 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    // Create/upgrade the schema on startup so a fresh database works without running `dotnet ef database update`
+    using (var scope = app.Services.CreateScope())
+    {
+        scope.ServiceProvider.GetRequiredService<ApplicationContext>().Database.Migrate();
+    }
+
     app.MapOpenApi();
     app.UseSwaggerUi(options =>
     {

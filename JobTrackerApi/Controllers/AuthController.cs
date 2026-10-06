@@ -24,7 +24,7 @@ public class AuthController : ControllerBase
         if (request.Username !="demo" || request.Password !="demo-password")
             return Unauthorized();
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt.key"]!));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
         var descriptor = new SecurityTokenDescriptor
         {
             Issuer = _config["Jwt:Issuer"],
