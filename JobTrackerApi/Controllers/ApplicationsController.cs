@@ -17,7 +17,6 @@ namespace JobTrackerApi.Controllers
     public class ApplicationsController : ControllerBase
     {
         private readonly ApplicationContext _context;
-        //private readonly List<Application> _applications;
 
         public ApplicationsController(ApplicationContext context)
         {
@@ -26,17 +25,18 @@ namespace JobTrackerApi.Controllers
 
         // GET: api/Applications
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Application>>> GetApplications()
+        public async Task<ActionResult<IEnumerable<Application>>> GetApplications([FromQuery] string? companyName)
         {
-            return _context.Applications;
+            IQueryable<Application> query = _context.Applications;
+            if(!string.IsNullOrWhiteSpace(companyName))
+            {
+                var term = companyName.Trim().ToLower();
+                query = query.Where(a => a.CompanyName.ToLower().Contains(term));
+            }
+            return await query.OrderBy(a => a.CompanyName).ToListAsync();
         }
         // GET: api/Applications/5
         [HttpGet("{id}")]
-        // public IActionResult GetById(int id)
-        // {
-        //     var app = _applications.FirstOrDefault(a => a.Id == id);
-        //     return app is null? NotFound() : Ok(app);
-        // }
         public async Task<ActionResult<Application>> GetApplication(int id)
         {
             var application = await _context.Applications.FindAsync(id);
@@ -52,20 +52,6 @@ namespace JobTrackerApi.Controllers
         // PUT: api/Applications/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        // public IActionResult PutApplication(int id, Application updatedApp)
-        // {
-        //     if (id != updatedApp.Id)
-        //     {
-        //         return BadRequest();
-        //     }
-        //     var idx = _applications.FindIndex(app => app.Id == id);
-        //     if (idx == -1)
-        //     {
-        //         return NotFound();
-        //     }
-        //     _applications[idx] = updatedApp;
-        //     return Ok();
-        // }
         public async Task<IActionResult> PutApplication(int id, Application application)
         {
             if (id != application.Id)
@@ -96,13 +82,7 @@ namespace JobTrackerApi.Controllers
 
         // POST: api/Applications
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        // public IActionResult Create(Application app)
-        // {
-        //     _applications.Add(app);
-        //     return CreatedAtAction(nameof(GetById), new {id = app.Id});
-        // }
-        
+        [HttpPost]        
         public async Task<ActionResult<Application>> PostApplication(Application application)
         {
             _context.Applications.Add(application);
@@ -126,16 +106,6 @@ namespace JobTrackerApi.Controllers
 
             return NoContent();
         }
-        // public IActionResult DeleteApplication(int id)
-        // {
-        //     var idx = _applications.FindIndex(app => app.Id == id);
-        //     if (idx == -1)
-        //     {
-        //         return NotFound();
-        //     }
-        //     _applications.RemoveAt(idx);
-        //     return NoContent();
-        // }
         private bool ApplicationExists(int id)
         {
             return _context.Applications.Any(e => e.Id == id);
