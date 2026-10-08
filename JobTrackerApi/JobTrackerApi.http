@@ -1,6 +1,59 @@
 @JobTrackerApi_HostAddress = http://localhost:5065
 
-GET {{JobTrackerApi_HostAddress}}/weatherforecast/
-Accept: application/json
+### Log in as the demo user and capture the token
+# @name login
+POST {{JobTrackerApi_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "demo",
+  "password": "demo-password"
+}
 
 ###
+@token = {{login.response.body.$.token}}
+
+### List all applications
+GET {{JobTrackerApi_HostAddress}}/api/applications
+Authorization: Bearer {{token}}
+
+### Filter by company name (case-insensitive, partial match)
+GET {{JobTrackerApi_HostAddress}}/api/applications?companyName=acme
+Authorization: Bearer {{token}}
+
+### Get one application
+GET {{JobTrackerApi_HostAddress}}/api/applications/1
+Authorization: Bearer {{token}}
+
+### Create an application
+POST {{JobTrackerApi_HostAddress}}/api/applications
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "companyName": "Acme Corp",
+  "roleTitle": "Backend Developer",
+  "status": 0,
+  "dateApplied": "2026-10-01",
+  "sourceUrl": "https://example.com/jobs/123",
+  "notes": "Referred by a friend"
+}
+
+### Update an application (id in the URL must match the body)
+PUT {{JobTrackerApi_HostAddress}}/api/applications/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "id": 1,
+  "companyName": "Acme Corp",
+  "roleTitle": "Backend Developer",
+  "status": 2,
+  "dateApplied": "2026-10-01",
+  "sourceUrl": "https://example.com/jobs/123",
+  "notes": "Interview scheduled"
+}
+
+### Delete an application
+DELETE {{JobTrackerApi_HostAddress}}/api/applications/1
+Authorization: Bearer {{token}}
