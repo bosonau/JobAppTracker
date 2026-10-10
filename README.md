@@ -87,7 +87,7 @@ Authorization: Bearer <token>
 | `GET` | `/api/applications?companyName=acme` | Filter by company name (case-insensitive, partial match) |
 | `GET` | `/api/applications/{id}` | Get one application |
 | `POST` | `/api/applications` | Create an application |
-| `PUT` | `/api/applications/{id}` | Replace an application (`id` in the body must match the URL) |
+| `PUT` | `/api/applications/{id}` | Replace an application |
 | `DELETE` | `/api/applications/{id}` | Delete an application |
 
 An application looks like this:

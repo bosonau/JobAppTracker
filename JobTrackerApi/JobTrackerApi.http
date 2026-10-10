@@ -39,13 +39,12 @@ Content-Type: application/json
   "notes": "Referred by a friend"
 }
 
-### Update an application (id in the URL must match the body)
+### Update an application
 PUT {{JobTrackerApi_HostAddress}}/api/applications/1
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "id": 1,
   "companyName": "Acme Corp",
   "roleTitle": "Backend Developer",
   "status": 2,

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using JobTrackerApi.Models;
+using JobTrackerApi.Dtos;
 
 namespace JobTrackerApi.Controllers
 {
@@ -19,7 +20,7 @@ namespace JobTrackerApi.Controllers
 
         // GET: api/Applications
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Application>>> GetApplications([FromQuery] string? companyName)
+        public async Task<ActionResult<IEnumerable<ApplicationResponse>>> GetApplications([FromQuery] string? companyName)
         {
             IQueryable<Application> query = _context.Applications;
             if(!string.IsNullOrWhiteSpace(companyName))
@@ -27,62 +28,45 @@ namespace JobTrackerApi.Controllers
                 var term = companyName.Trim().ToLower();
                 query = query.Where(a => a.CompanyName.ToLower().Contains(term));
             }
-            return await query.OrderBy(a => a.CompanyName).ToListAsync();
+            return await query.OrderBy(a => a.CompanyName)
+                .Select(a => a.ToResponse())
+                .ToListAsync();
         }
         // GET: api/Applications/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Application>> GetApplication(int id)
+        public async Task<ActionResult<ApplicationResponse>> GetApplication(int id)
         {
             var application = await _context.Applications.FindAsync(id);
+            if (application == null)
+            {
+                return NotFound();
+            }
+            return application.ToResponse();
+        }
 
+        // PUT: api/Applications/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutApplication(int id, UpdateApplicationRequest request)
+        {
+            var application = await _context.Applications.FindAsync(id);
             if (application == null)
             {
                 return NotFound();
             }
 
-            return application;
-        }
-
-        // PUT: api/Applications/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutApplication(int id, Application application)
-        {
-            if (id != application.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(application).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ApplicationExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
+            request.ApplyTo(application);
+            await _context.SaveChangesAsync();
             return NoContent();
         }
 
         // POST: api/Applications
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]        
-        public async Task<ActionResult<Application>> PostApplication(Application application)
+        public async Task<ActionResult<ApplicationResponse>> PostApplication(CreateApplicationRequest request)
         {
+            var application = request.ToEntity();
             _context.Applications.Add(application);
             await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetApplication", new { id = application.Id }, application);
+            return CreatedAtAction(nameof(GetApplication), new { id = application.Id }, application.ToResponse());
         }
 
         // DELETE: api/Applications/5
@@ -99,10 +83,6 @@ namespace JobTrackerApi.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
-        }
-        private bool ApplicationExists(int id)
-        {
-            return _context.Applications.Any(e => e.Id == id);
         }
     }
 }
