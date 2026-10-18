@@ -6,13 +6,17 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.OpenApi;
+using Microsoft.AspNetCore.Http.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+var mvc = builder.Services.AddControllers();
 
-builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+//add JSON options for vue to show
+mvc.AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
+//Adding openAPI
 builder.Services.AddOpenApi(opt =>
 {
     opt.AddDocumentTransformer((document, context, cancellationToken) =>
@@ -45,12 +49,16 @@ builder.Services.AddOpenApi(opt =>
     });
 });
 
-// Emit plain "integer" schemas instead of ["integer","string"], which Swagger UI can't validate
+//Config HTTP JSON options so swagger UI can validate integers
 builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.NumberHandling = JsonNumberHandling.Strict);
+
+//add db context to use postgresql db
 builder.Services.AddDbContext<ApplicationContext>(opt =>
     opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+
+//set up authorization
 var jwt = builder.Configuration.GetSection("Jwt");
 var jwtKey = jwt["Key"];
 //check to see if jwt is set
@@ -72,7 +80,7 @@ if (Encoding.UTF8.GetBytes(jwtKey).Length < 32)
 var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options=>
+    .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -86,6 +94,22 @@ builder.Services
         };
     });
 builder.Services.AddAuthorization();
+
+//add CORS so front-end domains can use API
+builder.Services.AddCors(options =>
+    options.AddPolicy("Frontend", policy => 
+        policy.WithOrigins("http://localhost:5173")
+        .AllowAnyHeader()
+        .AllowAnyMethod())
+);
+
+//make sure JSON sends status field of application (which is in ENUM) as text for Vue
+builder.Services.AddControllers().AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
+
+/**********************
+        BUILD APP
+**********************/
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -105,6 +129,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("Frontend");
 app.UseAuthentication();
 app.UseAuthorization();
 
