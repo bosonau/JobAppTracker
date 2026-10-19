@@ -10,6 +10,11 @@ app.use(createPinia())
 app.use(router)
 
 const auth = useAuthStore()
-setOnUnauthorized(() => { auth.logout(); router.push('/login') })
+setOnUnauthorized(() => { 
+    auth.logout()
+    const current = router.currentRoute.value
+    if (current.meta.guestOnly) return
+    router.push({ path: '/login', query: {redirect: current.fullPath}}) 
+})
 
 app.mount('#app')

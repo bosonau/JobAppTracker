@@ -49,6 +49,11 @@ function closeForm() {
     showForm.value = false
 }
 
+function dateFormat(d:string) {
+    var date = new Date(d)
+    return date.toLocaleDateString()
+}
+
 async function saveApplication(input: ApplicationInput) {
     try {
         if(editing.value) {
@@ -79,12 +84,14 @@ async function saveApplication(input: ApplicationInput) {
 
     <p v-if="loading">Loading...</p>
     <p v-else-if="error">{{ error }}</p>
+    <p v-else-if="items.length == 0">No Applications Yet</p>
     <table v-else>
         <tr v-for="a in items" :key="a.id">
             <td>{{ a.companyName }}</td>
             <td>{{ a.roleTitle }}</td>
-            <td>{{ a.dateApplied }}</td>
+            <td>{{ dateFormat(a.dateApplied) }}</td>
             <td>{{ STATUSES[a.status] }}</td>
+            <td><a :href="a.sourceUrl" target="_blank" rel="noopener" v-if="a.sourceUrl">link</a></td>
             <td>{{ a.notes }}</td>
             <td>
                 <button v-on:click="startEdit(a)">Edit</button>

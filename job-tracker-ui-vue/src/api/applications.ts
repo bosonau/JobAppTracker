@@ -6,7 +6,7 @@ export interface JobApplication {
     roleTitle: string
     status: number
     dateApplied: string
-    sourceUrl: string | null
+    sourceUrl: string 
     notes: string | null
 }
 

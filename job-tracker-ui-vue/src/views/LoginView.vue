@@ -1,19 +1,28 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth';
 
 const auth = useAuthStore()
+const route = useRoute()
 const router = useRouter()
 const username = ref('')
 const password = ref('')
 const error = ref('')
 
+//redirects, only to this app
+function safeRedirect(value: unknown): string {
+    return typeof value === 'string' && value.startsWith('/') && !value.startsWith('//')
+        ? value
+        : '/applications'
+}
+
+
 async function submit() {
     error.value = ''
     try {
         await auth.login(username.value, password.value)
-        router.push('/applications')
+        router.replace(safeRedirect(route.query.redirect))
     } catch {
         error.value = 'Login failed, check credentials.'
     }
