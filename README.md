@@ -111,7 +111,7 @@ An application looks like this:
 ## Project structure
 
 ```
-JobTrackerApi/
+api/
 ├── Controllers/
 │   ├── ApplicationsController.cs   # CRUD + company name filter
 │   └── AuthController.cs           # Demo login, issues JWTs
