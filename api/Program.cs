@@ -106,6 +106,12 @@ builder.Services.AddCors(options =>
 //make sure JSON sends status field of application (which is in ENUM) as text for Vue
 builder.Services.AddControllers().AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
+//redis
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration["Redis:Connection"];
+    options.InstanceName = "jobtracker:";
+});
 
 /**********************
         BUILD APP
