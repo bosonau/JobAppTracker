@@ -1,14 +1,17 @@
 # Sample project: JobAppTracker
 
-A REST API for tracking job applications: the company, role, status and date applied, plus notes. Built with ASP.NET Core and PostgreSQL, secured with JWT bearer authentication.
+- A REST API for tracking job applications: the company, role, status and date applied, plus notes. Built with ASP.NET Core and PostgreSQL, secured with JWT bearer authentication.
+- simple frontend w/ Vue.JS
 
 ## Tech stack
-
-- **.NET 10** / ASP.NET Core Web API (controllers)
-- **Entity Framework Core** with **PostgreSQL 16** (Npgsql)
-- **JWT bearer authentication**
-- **OpenAPI** document with **Swagger UI** (NSwag)
-- **Docker Compose** for the API and database
+- ### API
+  - **.NET 10** / ASP.NET Core Web API (controllers)
+  - **Entity Framework Core** with **PostgreSQL 16** (Npgsql)
+  - **JWT bearer authentication**
+  - **OpenAPI** document with **Swagger UI** (NSwag)
+  - **Docker Compose** for the API and database
+- ### UI-Vue
+- - Vue.JS 
 
 ## Getting started
 
@@ -58,6 +61,13 @@ dotnet run
 ### Database
 
 In the Development environment, EF Core migrations are applied automatically on startup, so you don't need to run `dotnet ef database update`. Data is stored in the `pgdata` Docker volume and survives `docker compose down`. To start over with an empty database, run `docker compose down -v`.
+
+### frontends (Vue)
+currently, navigate to /ui-vue
+```
+run npm dev
+```
+
 
 ## Authentication
 
