@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Cryptography;
 
 namespace JobTrackerApi.Controllers;
 
@@ -19,9 +20,15 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public ActionResult<LoginResponse> Login(LoginRequest request)
     {
-        // Demo, a hard-coded user
-        // TODO: set up either an identity provider or a hashed lookup in a user store
-        if (request.Username != "demo" || request.Password != "demo-password")
+        // Demo user, credentials come from config
+        var demoUser = _config["DemoUser:Username"];
+        var demoPassword = _config["DemoUser:Password"];
+        if (string.IsNullOrEmpty(demoUser) || string.IsNullOrEmpty(demoPassword))
+        {
+            return Problem("Demo user is not configured.");
+        }        
+        
+        if (!SecretEquals(request.Username, demoUser) || !SecretEquals(request.Password, demoPassword))
         {
             return Unauthorized();
         }
@@ -40,4 +47,10 @@ public class AuthController : ControllerBase
         var token = new JsonWebTokenHandler().CreateToken(descriptor);
         return new LoginResponse(token);
     }
+
+    private static bool SecretEquals(string a, string b) =>
+        CryptographicOperations.FixedTimeEquals(
+            SHA256.HashData(Encoding.UTF8.GetBytes(a)),
+            SHA256.HashData(Encoding.UTF8.GetBytes(b))
+        );
 }

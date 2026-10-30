@@ -12,7 +12,7 @@ const emit = defineEmits<{
 const form = ref<ApplicationInput>({
     companyName: '',
     roleTitle: '',
-    status: 0,
+    status: "Applied",
     dateApplied: new Date().toISOString().slice(0,10), // today, as 'YYYY-MM-DD'
     sourceUrl: '',
     notes: '',
@@ -43,7 +43,7 @@ function submit() {
         <label>
             Status
             <select v-model="form.status">
-                <option v-for="(name, i) in STATUSES" :key="i" :value="i">{{ name }}</option>
+                <option v-for="name in STATUSES" :key="name" :value="name">{{ name }}</option>
             </select>
         </label>
         <br />
@@ -65,4 +65,4 @@ function submit() {
         <button type="submit">Save</button>
         <button type="button" v-on:click="emit('cancel')">Cancel</button>
     </form>
-</template>
+</template> 

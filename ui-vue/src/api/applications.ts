@@ -4,9 +4,9 @@ export interface JobApplication {
     id: number
     companyName: string
     roleTitle: string
-    status: number
+    status: ApplicationStatus
     dateApplied: string
-    sourceUrl: string 
+    sourceUrl: string | null
     notes: string | null
 }
 
@@ -23,4 +23,5 @@ export const applicationsApi = {
     remove: (id: number) => request<void>(`/api/applications/${id}`, { method: 'DELETE' }),
 }
 
-export const STATUSES = ['Applied', 'Screening', 'Interview', 'Offer', 'Rejected', 'Withdrawn']
+export const STATUSES = ['Applied', 'Screening', 'Interview', 'Offer', 'Rejected', 'Withdrawn'] as const
+export type ApplicationStatus = (typeof STATUSES)[number]

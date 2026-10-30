@@ -6,8 +6,8 @@ POST {{JobTrackerApi_HostAddress}}/api/auth/login
 Content-Type: application/json
 
 {
-  "username": "demo",
-  "password": "demo-password"
+  "username": "{{$dotenv DEMO_USERNAME}}",
+  "password": "{{$dotenv DEMO_PASSWORD}}"
 }
 
 ###

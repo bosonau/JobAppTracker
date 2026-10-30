@@ -4,15 +4,15 @@ services:
     container_name: jobtracker-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: jobtracker
-      POSTGRES_PASSWORD: devpassword
-      POSTGRES_DB: jobtracker
+      POSTGRES_USER:  ${POSTGRES_USER:?POSTGRES_USER is not set - see .env.example}
+      POSTGRES_PASSWORD:  ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is not set - see .env.example}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is not set - see .env.example}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U jobtracker -d jobtracker"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -25,10 +25,12 @@ services:
       redis:
         condition: service_healthy
     environment:
-      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=jobtracker;Username=jobtracker;Password=devpassword"
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
       ASPNETCORE_ENVIRONMENT: Development
       Jwt__Key: ${JWT_KEY}
-      Redis__Connection: 6379
+      Redis__Connection: redis:6379
+      DemoUser__Username: ${DEMO_USERNAME:-demo}
+      DemoUser__Password: ${DEMO_PASSWORD:?DEMO_PASSWORD is not set.}
     ports:
       - "8080:8080"
   redis:

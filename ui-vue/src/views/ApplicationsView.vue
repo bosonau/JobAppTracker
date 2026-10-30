@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { applicationsApi, type JobApplication, STATUSES, type ApplicationInput } from '@/api/applications'
+import { applicationsApi, type JobApplication, type ApplicationInput } from '@/api/applications'
 import ApplicationForm from '@/components/ApplicationForm.vue'
 
 const error = ref('')
@@ -90,7 +90,7 @@ async function saveApplication(input: ApplicationInput) {
             <td>{{ a.companyName }}</td>
             <td>{{ a.roleTitle }}</td>
             <td>{{ dateFormat(a.dateApplied) }}</td>
-            <td>{{ STATUSES[a.status] }}</td>
+            <td>{{ a.status }}</td>
             <td><a :href="a.sourceUrl" target="_blank" rel="noopener" v-if="a.sourceUrl">link</a></td>
             <td>{{ a.notes }}</td>
             <td>

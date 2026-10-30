@@ -33,13 +33,9 @@ openssl rand -base64 32
 
 Requires [Docker](https://www.docker.com/).
 
-```bash
-cd JobTrackerApi
-echo "JWT_KEY=<your-generated-key>" > .env
-docker compose up -d --build
-```
 
 - API: http://localhost:8080
+- Copy .env.example as .env and modify it.
 - Swagger UI: http://localhost:8080/swagger
 
 `.env` is git-ignored, so your key stays out of the repo.
@@ -71,14 +67,8 @@ run npm dev
 
 ## Authentication
 
-All `/api/applications` endpoints require a JWT. To get one, log in as the built-in demo user:
+All `/api/applications` endpoints require a JWT. To get one, log in as the built-in demo user:.  Login with the DEMO_USERNAME / DEMOPASSWORD in .env
 
-```http
-POST /api/auth/login
-Content-Type: application/json
-
-{ "username": "demo", "password": "demo-password" }
-```
 
 The response contains a `token`, which is valid for 30 minutes. Send it with each request:
 
@@ -139,9 +129,8 @@ api/
 
 This is a learning and portfolio project, not production software:
 
-- **Demo login only.** There's a single hard-coded user (`demo` / `demo-password`), with no user store or password hashing.
+- **Demo login only.** There's a single hard-coded user (configured through settings), with no user store or password hashing.
 - **No per-user data.** Applications aren't tied to a user, so any authenticated caller can see and edit all of them.
-- **Development credentials.** The database password (`devpassword`) in `appsettings.json` and `docker-compose.yml` is for local use only.
 - **No automated tests yet.**
 
 ## License
