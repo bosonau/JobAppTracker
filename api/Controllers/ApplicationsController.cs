@@ -16,9 +16,9 @@ namespace JobTrackerApi.Controllers
     
     public class ApplicationsController : ControllerBase
     {
+        private readonly ApplicationContext _context;
         private readonly IDistributedCache _cache;
         private readonly ILogger<ApplicationsController> _logger;
-        private readonly ApplicationContext _context;
 
         public ApplicationsController(ApplicationContext context, ILogger<ApplicationsController> logger, IDistributedCache cache)
         {
@@ -27,7 +27,7 @@ namespace JobTrackerApi.Controllers
             _logger = logger;
         }
 
-        private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anon";
+        private string UserId => User.FindFirstValue(ClaimTypes.Name) ?? "anon";
         private async Task<string> GetVersionAsync()
         {
             try { return await _cache.GetStringAsync($"apps:ver:{UserId}") ?? "0"; }

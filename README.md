@@ -61,7 +61,7 @@ In the Development environment, EF Core migrations are applied automatically on 
 ### frontends (Vue)
 currently, navigate to /ui-vue
 ```
-run npm dev
+npm run dev
 ```
 
 
