@@ -24,11 +24,14 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
     environment:
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
       ASPNETCORE_ENVIRONMENT: Development
       Jwt__Key: ${JWT_KEY}
       Redis__Connection: redis:6379
+      Elasticsearch__Url: http://elasticsearch:9200
       DemoUser__Username: ${DEMO_USERNAME:-demo}
       DemoUser__Password: ${DEMO_PASSWORD:?DEMO_PASSWORD is not set.}
     ports:
@@ -42,6 +45,22 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-    
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.3.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m  
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:9200 > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 volumes:
-  pgdata:    
+  pgdata:
+  esdata:    

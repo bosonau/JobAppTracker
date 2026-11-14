@@ -18,14 +18,26 @@ namespace JobTrackerApi.Controllers
     {
         private readonly ApplicationContext _context;
         private readonly IDistributedCache _cache;
+        private readonly ApplicationSearchService _search;
         private readonly ILogger<ApplicationsController> _logger;
 
-        public ApplicationsController(ApplicationContext context, ILogger<ApplicationsController> logger, IDistributedCache cache)
+        public ApplicationsController(ApplicationContext context, ILogger<ApplicationsController> logger, IDistributedCache cache, ApplicationSearchService search)
         {
             _context = context;
             _cache = cache;
             _logger = logger;
+            _search = search;
         }
+
+        private ApplicationDoc ToDoc(Application a) => new () {
+            Id = a.Id,
+            UserId = UserId,
+            Company = a.CompanyName,
+            Title = a.RoleTitle,
+            Status = a.Status.ToString(),
+            Notes = a.Notes,
+            AppliedDate = a.DateApplied
+        };
 
         private string UserId => User.FindFirstValue(ClaimTypes.Name) ?? "anon";
         private async Task<string> GetVersionAsync()
@@ -123,6 +135,7 @@ namespace JobTrackerApi.Controllers
             request.ApplyTo(application);
             await _context.SaveChangesAsync();
             await BumpVersionAsync();
+            await _search.IndexAsync(ToDoc(application));
             return NoContent();
         }
 
@@ -134,6 +147,7 @@ namespace JobTrackerApi.Controllers
             _context.Applications.Add(application);
             await _context.SaveChangesAsync();
             await BumpVersionAsync();
+            await _search.IndexAsync(ToDoc(application));
             return CreatedAtAction(nameof(GetApplication), new { id = application.Id }, application.ToResponse());
         }
 
@@ -150,8 +164,42 @@ namespace JobTrackerApi.Controllers
             _context.Applications.Remove(application);
             await _context.SaveChangesAsync();
             await BumpVersionAsync();
+            await _search.DeleteAsync(id);
 
             return NoContent();
         }
+
+        [HttpPost("reindex")]
+        public async Task<IActionResult> Reindex([FromServices] IWebHostEnvironment env)
+        {
+            if (!env.IsDevelopment()) return NotFound();
+            var docs = await _context.Applications
+                .AsNoTracking()
+                .Select(a => new ApplicationDoc
+                {
+                    Id = a.Id,
+                    UserId = UserId.ToString(),
+                    Company = a.CompanyName,
+                    Title = a.RoleTitle,
+                    Status = a.Status.ToString(),
+                    Notes = a.Notes,
+                    AppliedDate = a.DateApplied
+                })
+                .ToListAsync();
+            await _search.ReindexAllAsync(docs);
+            return Ok(new {indexed = docs.Count});                
+        }
+        [HttpGet("search")]
+        public async Task<ActionResult<List<ApplicationDoc>>> SearchText([FromQuery] string q)
+        {
+            if (String.IsNullOrWhiteSpace(q)) return Ok(new List<ApplicationDoc>());
+            try { 
+                return Ok(await _search.SearchAsync(UserId, q, null));}
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Search Unavailable");
+                return StatusCode(503, "Search is temporary Unavailable");
+            }
+        }   
     }
 }

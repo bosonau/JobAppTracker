@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.OpenApi;
-using Microsoft.AspNetCore.Http.Json;
+using Elastic.Clients.Elasticsearch;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -110,6 +110,11 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.Configuration = builder.Configuration["Redis:Connection"];
     options.InstanceName = "jobtracker:";
 });
+
+//elasticsearch
+var esUrl = builder.Configuration["Elasticsearch:Url"] ?? "http://localhost:9200";
+builder.Services.AddSingleton(new ElasticsearchClient(new ElasticsearchClientSettings(new Uri(esUrl))));
+builder.Services.AddScoped<ApplicationSearchService>();
 
 /**********************
         BUILD APP
