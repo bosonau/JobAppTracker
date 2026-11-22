@@ -1,7 +1,7 @@
-# Sample project: JobAppTracker
+# JobAppTracker with Vue Frontend
 
 - A REST API for tracking job applications: the company, role, status and date applied, plus notes. Built with ASP.NET Core and PostgreSQL, secured with JWT bearer authentication.
-- simple frontend w/ Vue.JS
+- simple frontend w/ Vue.JS, just functionality for now, styling, etc... will come shortly.
 
 ## Tech stack
 - ### API
